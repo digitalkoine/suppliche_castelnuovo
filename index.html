@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>DB Suppliche – Ricerca</title>
+  <link rel="stylesheet" href="assets/style.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="container">
+      <div class="brand">
+        <div class="badge">DB Suppliche</div>
+        <div class="brand-title">Sito di ricerca (client‑side)</div>
+        <div class="badge">SQLite in-browser</div>
+      </div>
+      <div class="nav">
+        <button id="tab_petitions" class="active" type="button">Suppliche</button>
+        <button id="tab_people" type="button">Persone</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="card">
+      <h1>Ricerca</h1>
+      <p class="muted">
+        Questo sito funziona <b>senza server</b>: scarica il file SQLite e fa le query direttamente nel browser (sql.js).
+        Quando lo pubblichi su GitHub Pages/Netlify, resta “dinamico” per chi lo visita.
+      </p>
+
+      <div id="status" class="notice">
+        <span class="spinner"></span>
+        Caricamento database…
+      </div>
+
+      <form id="searchForm" class="form" onsubmit="return false;">
+        <input type="hidden" id="view" value="petitions" />
+
+        <div class="row">
+          <label>
+            <span>Testo libero</span>
+            <input id="q" placeholder="Es: Rossi, falegname, rissa, licenza…" />
+          </label>
+
+          <label>
+            <span>Esito</span>
+            <select id="outcome">
+              <option value="">(tutti)</option>
+              <option value="grazia_concessa_totalmente">Grazia concessa totalmente</option><option value="grazia_concessa_parzialmente">Grazia concessa parzialmente</option><option value="grazia_respinta">Grazia respinta</option><option value="nessuna_risposta">Nessuna risposta</option>
+            </select>
+          </label>
+
+          <label>
+            <span>Genere</span>
+            <select id="genere">
+              <option value="">(tutti)</option>
+              <option value="M">M</option>
+              <option value="F">F</option>
+            </select>
+          </label>
+
+          <label>
+            <span>Risultati per pagina</span>
+            <select id="page_size">
+              <option value="10">10</option>
+              <option value="20">20</option>
+              <option value="30" selected>30</option>
+              <option value="50">50</option>
+              <option value="100">100</option>
+              <option value="200">200</option>
+            </select>
+          </label>
+        </div>
+
+        <details class="details">
+          <summary>Filtri avanzati</summary>
+
+          <div class="row">
+            <label>
+              <span>Professione (contiene)</span>
+              <input id="professione" placeholder="Es: contadino" />
+            </label>
+            <label>
+              <span>Luogo (contiene)</span>
+              <input id="luogo" placeholder="Es: Torino" />
+            </label>
+            <label>
+              <span>Anno risposta da</span>
+              <input id="anno_da" placeholder="Es: 1730" />
+            </label>
+            <label>
+              <span>Anno risposta a</span>
+              <input id="anno_a" placeholder="Es: 1750" />
+            </label>
+          </div>
+
+          <div class="row">
+            <div>
+              <span class="muted" style="font-size:12px;">Tipo di supplica (selezione multipla)</span>
+              <div class="checks" id="types">
+                <label class="check"><input type="checkbox" value="cancellazione_pena"><span>Cancellazione pena</span></label><label class="check"><input type="checkbox" value="totalita_pena"><span>Totalità pena</span></label><label class="check"><input type="checkbox" value="permuta_pena"><span>Permuta pena</span></label><label class="check"><input type="checkbox" value="proroga_pena"><span>Proroga pena</span></label><label class="check"><input type="checkbox" value="composizione_pena"><span>Composizione pena</span></label><label class="check"><input type="checkbox" value="richiesta_generale"><span>Richiesta generale</span></label><label class="check"><input type="checkbox" value="richiesta_di_llicenza"><span>Richiesta di licenza</span></label><label class="check"><input type="checkbox" value="rottura_carcere"><span>Rottura carcere</span></label><label class="check"><input type="checkbox" value="pena_capitale"><span>Pena capitale</span></label>
+              </div>
+              <div style="margin-top:8px; display:flex; gap:10px; flex-wrap:wrap;">
+                <label style="max-width:260px;">
+                  <span>Modalità tipi</span>
+                  <select id="type_mode">
+                    <option value="any" selected>almeno uno</option>
+                    <option value="all">tutti</option>
+                  </select>
+                </label>
+                <button class="btn ghost" type="button" id="clear_types">Azzera tipi</button>
+              </div>
+            </div>
+
+            <div>
+              <span class="muted" style="font-size:12px;">Suggerimenti</span>
+              <div class="notice" style="margin-top:8px;">
+                <div><span class="badge">Trucco</span> Puoi cercare anche parole presenti in <span class="code">motivazione</span> / <span class="code">richiesta</span>.</div>
+                <div style="margin-top:6px;"><span class="badge">Vista</span> “Persone” restituisce un elenco di supplicanti, con conteggio suppliche collegate.</div>
+              </div>
+            </div>
+          </div>
+        </details>
+
+        <div class="actions">
+          <button class="btn" type="button" id="do_search">Cerca</button>
+          <button class="btn ghost" type="button" id="reset">Reset</button>
+        </div>
+      </form>
+    </section>
+
+    <section class="card" id="resultsCard" style="display:none;">
+      <div class="results-head">
+        <h2>Risultati</h2>
+        <div class="muted" id="resultsMeta"></div>
+      </div>
+      <div class="list" id="results"></div>
+      <div class="pager" id="pager"></div>
+    </section>
+  </main>
+
+  <div class="modal-backdrop" id="modalBackdrop" aria-hidden="true">
+    <div class="modal">
+      <div class="modal-head">
+        <div>
+          <h2 id="modalTitle" style="margin:0 0 6px;"></h2>
+          <div class="muted" id="modalMeta"></div>
+        </div>
+        <button class="modal-close" id="modalClose" type="button">Chiudi</button>
+      </div>
+      <div id="modalBody"></div>
+    </div>
+  </div>
+
+  <!-- sql.js via CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/sql.js@1.10.3/dist/sql-wasm.js"></script>
+  <script src="assets/app.js"></script>
+</body>
+</html>
