@@ -3,6 +3,8 @@
 Questa cartella è un **sito statico** (HTML/CSS/JS) che fa query sul database SQLite **direttamente nel browser** usando `sql.js`.
 Non serve un server applicativo: basta pubblicare la cartella su GitHub Pages / Netlify / qualsiasi hosting statico.
 
+Per aprire https://digitalkoine.github.io/suppliche_castelnuovo/ 
+
 ## Struttura
 - `index.html`
 - `assets/style.css`
