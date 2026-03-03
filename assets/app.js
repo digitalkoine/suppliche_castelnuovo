@@ -244,7 +244,7 @@ async function showPerson(sid) {
 
   const suppliche = runQuery(`
     SELECT s.*,
-           GROUP_CONCAT(DISTINCT (p2.cognome_supplicanti || ' ' || p2.nome_supplicante), ' | ') AS supplicanti_nomi
+           REPLACE(GROUP_CONCAT(DISTINCT (p2.cognome_supplicanti || ' ' || p2.nome_supplicante)), ',', ' | ') AS supplicanti_nomi
     FROM suppliche_clean s
     JOIN suppliche_supplicanti_clean ss ON ss.codice_id_supplica = s.codice_id_supplica
     JOIN supplicanti_clean p2 ON p2.codice_id_supplicante = ss.codice_id_supplicante
@@ -392,7 +392,7 @@ function doSearch(page=1) {
   rows = runQuery(`
     SELECT s.*,
            GROUP_CONCAT(DISTINCT p.codice_id_supplicante) AS supplicanti_ids,
-           GROUP_CONCAT(DISTINCT (p.cognome_supplicanti || ' ' || p.nome_supplicante), ' | ') AS supplicanti_nomi
+           REPLACE(GROUP_CONCAT(DISTINCT (p.cognome_supplicanti || ' ' || p.nome_supplicante)), ',', ' | ') AS supplicanti_nomi
     FROM suppliche_clean s
     LEFT JOIN suppliche_supplicanti_clean ss ON ss.codice_id_supplica = s.codice_id_supplica
     LEFT JOIN supplicanti_clean p ON p.codice_id_supplicante = ss.codice_id_supplicante
